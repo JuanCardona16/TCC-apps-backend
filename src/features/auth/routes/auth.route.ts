@@ -1,7 +1,7 @@
 import { PublicRoutes } from '@/constants';
 import { Router } from 'express';
 import AuthenticationController from '@/features/auth/basic/controllers/auth.controller';
-import changePasswordController from '@/features/auth/change-password/controllers/changePassword.controller';
+// import changePasswordController from '@/features/auth/change-password/controllers/changePassword.controller';
 import AuthenticationGoogleController from '@/features/auth/google/controllers/authGoogle.controller';
 import { asyncHandler } from '@/core/errors';
 
@@ -65,7 +65,6 @@ authenticationPaths.post(PublicRoutes.REGISTER, asyncHandler(AuthenticationContr
  *         description: Unauthorized
  */
 authenticationPaths.post(PublicRoutes.LOGIN, asyncHandler(AuthenticationController.login));
-authenticationPaths.post(PublicRoutes.LOGIN, asyncHandler(AuthenticationController.login));
 
 /**
  * @swagger
@@ -90,10 +89,10 @@ authenticationPaths.post(PublicRoutes.LOGIN, asyncHandler(AuthenticationControll
  *       404:
  *         description: User not found
  */
-authenticationPaths.post(
-  PublicRoutes.FORGOT_PASSWORD,
-  asyncHandler(changePasswordController.sendCode)
-);
+// authenticationPaths.post(
+//   PublicRoutes.FORGOT_PASSWORD,
+//   asyncHandler(changePasswordController.sendCode)
+// );
 
 /**
  * @swagger
@@ -121,10 +120,10 @@ authenticationPaths.post(
  *       400:
  *         description: Invalid code
  */
-authenticationPaths.post(
-  PublicRoutes.VARIFY_CODE,
-  asyncHandler(changePasswordController.verifyCode)
-);
+// authenticationPaths.post(
+//   PublicRoutes.VARIFY_CODE,
+//   asyncHandler(changePasswordController.verifyCode)
+// );
 
 /**
  * @swagger
@@ -155,10 +154,10 @@ authenticationPaths.post(
  *       400:
  *         description: Invalid request
  */
-authenticationPaths.put(
-  PublicRoutes.CHANGE_PASSWORD,
-  asyncHandler(changePasswordController.changePassword)
-);
+// authenticationPaths.put(
+//   PublicRoutes.CHANGE_PASSWORD,
+//   asyncHandler(changePasswordController.changePassword)
+// );
 
 /**
  * @swagger
