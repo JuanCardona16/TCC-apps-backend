@@ -1,4 +1,4 @@
-import app from '../core/app.ts';
+import app from '../core/app';
 import { PORT } from '@/config/env/env';
 
 app.listen(3001, '0.0.0.0', () => {
