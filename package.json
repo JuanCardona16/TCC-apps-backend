@@ -4,7 +4,7 @@
   "main": "src/core/index.ts",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec \"tsx -r tsconfig-paths/register\" src/core/index.ts",
-    "start": "node dist/core/index.js",
+    "start": "node dist/core/index.ts",
     "build": "npx tsc",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
