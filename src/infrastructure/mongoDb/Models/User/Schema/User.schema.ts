@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 import crypto from 'node:crypto';
-import { AuthMethods, User } from '../Entity/User.entity';
+import { AuthMethods, Rol, User } from '../Entity/User.entity';
 import PasswordHelpers from '@/lib/Passwords/PasswordHelpers';
 import { CustomError } from '@/lib';
 
@@ -11,11 +11,13 @@ const UserMongoSchema = new Schema<User>(
       required: true,
       unique: true,
       default: () => crypto.randomUUID(),
+      index: true,
     },
     username: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
     email: {
       type: String,
@@ -26,6 +28,7 @@ const UserMongoSchema = new Schema<User>(
         validator: (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
         message: 'Email is not valid',
       },
+      index: true,
     },
     password: {
       type: String,
@@ -38,10 +41,17 @@ const UserMongoSchema = new Schema<User>(
       enum: Object.values(AuthMethods),
       default: AuthMethods.BASIC,
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
+    rol: {
+      type: String,
+      required: true,
+      enum: Object.values(Rol),
+      default: Rol.STUDENT,
+      index: true,
     },
+    studentCode: { type: String, unique: true, index: true },
+    associatedSubjects: [{ type: String, unique: true }],
+    registeredSubjects: [{ type: String, unique: true }],
+    historyOfNotifications: { type: String, unique: true },
   },
   {
     timestamps: true,
