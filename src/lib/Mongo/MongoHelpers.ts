@@ -1,5 +1,6 @@
 import mongoose, { model, Model, Schema } from 'mongoose';
 import { CollectionsNamesMongo } from '../../infrastructure/mongoDb/Collections/Collections';
+import { Rol, User } from '@/infrastructure/mongoDb/Models/User';
 
 class MongoHelpers {
   constructor() {
@@ -48,6 +49,7 @@ class MongoHelpers {
   getDataCollectionModel<T>(Collection: CollectionsNamesMongo, Model: Schema): Model<T> {
     return model<T>(Collection, Model);
   }
+
 }
 
 export default new MongoHelpers();

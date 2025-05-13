@@ -1,16 +1,25 @@
-export interface User {
+// Esquela De Usuario
+export interface IUser {
   uuid: string;
   username: string;
   email: string;
   password: string;
   authenticationMethod: AuthMethods;
-  rol: Rol,
-  studentCode: string, // Codigo de estudiante.
-	associatedSubjects: String[], // Materias asignadas solo para profesores (relacion con la otra coleccion).
-	registeredSubjects: String[], // Materias inscritas solo para estudiantes.
-	historyOfNotifications: string, // Historial de notificaciones para todos los usuarios (relacion con la otra coleccion).
-	createdAt: Date, // Fecha de craecion.
-  updatedAt: Date // Fecha de ultima actualizacion.
+  rol: Rol;
+  studentCode?: string;
+  associatedSubjects?: string[];
+  registeredSubjects?: string[];
+  historyOfNotifications?: string;
+}
+
+// Estudiante
+export interface IStudent extends IUser {
+  studentCode: string;
+  registeredSubjects: string[];
+}
+
+export interface ITeacher extends IUser {
+  associatedSubjects: string[];
 }
 
 export enum AuthMethods {

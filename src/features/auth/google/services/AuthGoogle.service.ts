@@ -4,7 +4,7 @@ import { CLIENT_GOOGLE_ID, CLIENT_GOOGLE_SECRET } from '@/config/env/env';
 import axios from 'axios';
 import { client } from '../config/AuthGoogleConfig';
 import { AuthMethods } from '@/infrastructure/mongoDb/Models/User';
-import UserModel from '@/infrastructure/mongoDb/Models/User/UserModel';
+import UserModel from '@/infrastructure/mongoDb/Models/User/repository/UserModel';
 
 class AuthenticationGoogleServices {
   private verifyGoogle = async (id_token: string) => {

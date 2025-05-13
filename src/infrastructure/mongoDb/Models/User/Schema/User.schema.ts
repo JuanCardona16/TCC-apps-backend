@@ -1,10 +1,10 @@
-import { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import crypto from 'node:crypto';
-import { AuthMethods, Rol, User } from '../Entity/User.entity';
+import { AuthMethods, Rol, IUser, ITeacher, IStudent } from '../Entity/User.entity';
 import PasswordHelpers from '@/lib/Passwords/PasswordHelpers';
 import { CustomError } from '@/lib';
 
-const UserMongoSchema = new Schema<User>(
+const UserMongoSchema = new Schema<IUser>(
   {
     uuid: {
       type: String,
@@ -34,6 +34,8 @@ const UserMongoSchema = new Schema<User>(
       type: String,
       required: true,
       trim: true,
+      minlength: 8,
+      select: false,
     },
     authenticationMethod: {
       type: String,
@@ -48,32 +50,75 @@ const UserMongoSchema = new Schema<User>(
       default: Rol.STUDENT,
       index: true,
     },
-    studentCode: { type: String, unique: true, index: true },
-    associatedSubjects: [{ type: String, unique: true }],
-    registeredSubjects: [{ type: String, unique: true }],
-    historyOfNotifications: { type: String, unique: true },
+    historyOfNotifications: { type: String, default: '' },
   },
   {
     timestamps: true,
     versionKey: false,
+    discriminatorKey: 'rol'
   }
 );
 
 UserMongoSchema.pre('save', async function (next) {
-  // Si el usuario se autentica con Google y ya tiene una contraseña, solo la encriptamos
-  if (this.authenticationMethod === 'GOOGLE') {
-    if (!this.password) {
+  const user = this as IUser;
+
+  // Generar contraseña si no existe (por método GOOGLE)
+  if (user.authenticationMethod === 'GOOGLE') {
+    if (!user.password) {
       // Generar una contraseña aleatoria si no tiene una
-      this.password = PasswordHelpers.generateSecurePassword(this.username);
+      user.password = PasswordHelpers.generateSecurePassword(user.username);
     }
   } else {
-    // Validar la contraseña solo si el método de autenticación no es GOOGLE
-    if (!PasswordHelpers.validateCharacters(this.password)) {
+    // Validar si la contraseña cumple con las reglas
+    if (!PasswordHelpers.validateCharacters(user.password)) {
       return next(CustomError(400, 'Invalid Credentials'));
     }
   }
-  this.password = PasswordHelpers.generateHashing(this.password, 12);
+
+  // Hashear la contraseña siempre
+  user.password = PasswordHelpers.generateHashing(user.password, 12);
+
   next();
 });
 
-export default UserMongoSchema;
+// Modelo Base
+const UserModel = model<IUser>('User', UserMongoSchema);
+
+// INTERFACES Y MODELOS ESPECÍFICOS POR ROL ------------------------
+
+// Estudiante
+const StudentSchema = new Schema<IStudent>({
+  studentCode: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true
+  },
+  registeredSubjects: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: (subjects: string[]) => new Set(subjects).size === subjects.length,
+      message: 'Subjects must be unique'
+    }
+  }
+});
+
+// Profesor
+const TeacherSchema = new Schema<ITeacher>({
+  associatedSubjects: {
+    type: [String],
+    required: true,
+    validate: {
+      validator: (subjects: string[]) => new Set(subjects).size === subjects.length,
+      message: 'Subjects must be unique'
+    }
+  }
+});
+
+// Creamos los discriminadores
+export const StudentModel = UserModel.discriminator<IStudent>(Rol.STUDENT, StudentSchema);
+export const TeacherModel = UserModel.discriminator<ITeacher>(Rol.TEACHER, TeacherSchema);
+
+export default UserMongoSchema
+

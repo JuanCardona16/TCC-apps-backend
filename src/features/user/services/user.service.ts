@@ -1,4 +1,4 @@
-import UserModel from '@/infrastructure/mongoDb/Models/User/UserModel';
+import UserModel from '@/infrastructure/mongoDb/Models/User/repository/UserModel';
 import { CustomError } from '@/lib';
 
 class UserServices {
