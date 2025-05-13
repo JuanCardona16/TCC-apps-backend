@@ -1,6 +1,5 @@
 import mongoose, { model, Model, Schema } from 'mongoose';
 import { CollectionsNamesMongo } from '../../infrastructure/mongoDb/Collections/Collections';
-import { Rol, User } from '@/infrastructure/mongoDb/Models/User';
 
 class MongoHelpers {
   constructor() {
