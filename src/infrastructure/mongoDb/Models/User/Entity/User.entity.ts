@@ -31,5 +31,6 @@ export enum AuthMethods {
 
 export enum Rol {
   STUDENT = 'STUDENT',
-  TEACHER = 'TEACHER'
+  TEACHER = 'TEACHER',
+  ADMIN = 'ADMIN'
 }

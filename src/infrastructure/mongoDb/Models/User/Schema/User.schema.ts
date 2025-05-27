@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { AuthMethods, Rol, IUser, ITeacher, IStudent } from '../Entity/User.entity';
 import PasswordHelpers from '@/lib/Passwords/PasswordHelpers';
 import { CustomError } from '@/lib';
+import { CollectionsNamesMongo } from '@/infrastructure/mongoDb/Collections/Collections';
 
 const UserMongoSchema = new Schema<IUser>(
   {
@@ -82,7 +83,7 @@ UserMongoSchema.pre('save', async function (next) {
 });
 
 // Modelo Base
-const UserModel = model<IUser>('User', UserMongoSchema);
+const UserModel = model<IUser>(CollectionsNamesMongo.USERS, UserMongoSchema);
 
 // INTERFACES Y MODELOS ESPECÍFICOS POR ROL ------------------------
 

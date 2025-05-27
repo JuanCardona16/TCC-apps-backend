@@ -23,6 +23,8 @@ class AuthenticationServices {
         ...data,
         associatedSubjects: data.associatedSubjects ?? [], // asegura que no sea undefined
       });
+    } else if (data.rol === Rol.ADMIN) {
+      newUser = new UserModel(data);
     } else {
       throw CustomError(400, 'Invalid role or missing user data');
     }
@@ -42,7 +44,10 @@ class AuthenticationServices {
 
     // Validar que el método de autenticación coincida
     if (isExistUserInDb.authenticationMethod !== AuthMethods.BASIC) {
-      return CustomError(403, `Este usuario usa autenticación por ${isExistUserInDb.authenticationMethod}`);
+      return CustomError(
+        403,
+        `Este usuario usa autenticación por ${isExistUserInDb.authenticationMethod}`
+      );
     }
 
     if (!PasswordHelpers.compare(data.password, isExistUserInDb.password))
