@@ -26,11 +26,11 @@ const userRouterPaths: Router = Router();
  *         - path
  *         - method
  *         - description
- * 
+ *
  * tags:
  *   - name: Users
  *     description: Operations related to user management.
- * 
+ *
  * paths:
  *   /users:
  *     get:
@@ -48,5 +48,7 @@ const userRouterPaths: Router = Router();
  *                   $ref: '#/components/schemas/UserRouterPaths'
  */
 userRouterPaths.get(PrivateRoutes.PROFILE, authorize, userControllers.getUserInfo);
+userRouterPaths.get('/students', authorize, userControllers.getAllStudent);
+userRouterPaths.get('/teachers', authorize, userControllers.getAllTeachers);
 
 export default userRouterPaths;

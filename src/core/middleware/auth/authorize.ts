@@ -5,13 +5,16 @@ import { RequestHandler } from 'express';
 export const authorize: RequestHandler = async (req, _res, next) => {
   try {
     const authorizeHeader = req.headers.authorization;
+    console.log("autorization hader", authorizeHeader)
 
     if (!authorizeHeader) return next(CustomError(401, 'Not authorized'));
 
-    const token = authorizeHeader?.split(' ')[1];
+    // const token = authorizeHeader?.split(' ')[1];
+    // console.log('Token', token)
 
-    const validateToken = jwtHelpers.verifyToken<string>(token!);
-
+    // const validateToken = jwtHelpers.verifyToken<string>(token!);
+    const validateToken = jwtHelpers.verifyToken<string>(authorizeHeader!);
+    
     if (!validateToken || !validateToken.payload) {
       return next(CustomError(401, 'Not authorized - invalid access data'));
     }

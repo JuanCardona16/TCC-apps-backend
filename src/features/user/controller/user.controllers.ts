@@ -10,6 +10,30 @@ class UserControllers {
 
     res.status(200).send(CustomApiResponses.success(response));
   };
+
+  getAllStudent: RequestHandler = async (req, res, next) => {
+    const { conditions, page, limit } = req.params;
+
+    const response = await UserServices.getAllStudentsForPaginated(
+      conditions,
+      Number(page),
+      Number(limit)
+    );
+
+    res.status(200).send(CustomApiResponses.success(response));
+  };
+
+  getAllTeachers: RequestHandler = async (req, res, next) => {
+    const { conditions, page, limit } = req.params;
+
+    const response = await UserServices.getAllTeachersForPaginated(
+      conditions,
+      Number(page),
+      Number(limit)
+    );
+
+    res.status(200).send(CustomApiResponses.success(response));
+  };
 }
 
 export default new UserControllers();

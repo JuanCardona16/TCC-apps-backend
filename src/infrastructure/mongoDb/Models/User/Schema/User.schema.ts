@@ -55,7 +55,7 @@ const UserMongoSchema = new Schema<IUser>(
   {
     timestamps: true,
     versionKey: false,
-    discriminatorKey: 'rol'
+    discriminatorKey: 'rol',
   }
 );
 
@@ -92,16 +92,16 @@ const StudentSchema = new Schema<IStudent>({
     type: String,
     required: true,
     unique: true,
-    index: true
+    index: true,
   },
   registeredSubjects: {
     type: [String],
     default: [],
     validate: {
       validator: (subjects: string[]) => new Set(subjects).size === subjects.length,
-      message: 'Subjects must be unique'
-    }
-  }
+      message: 'Subjects must be unique',
+    },
+  },
 });
 
 // Profesor
@@ -111,14 +111,13 @@ const TeacherSchema = new Schema<ITeacher>({
     required: true,
     validate: {
       validator: (subjects: string[]) => new Set(subjects).size === subjects.length,
-      message: 'Subjects must be unique'
-    }
-  }
+      message: 'Subjects must be unique',
+    },
+  },
 });
 
 // Creamos los discriminadores
 export const StudentModel = UserModel.discriminator<IStudent>(Rol.STUDENT, StudentSchema);
 export const TeacherModel = UserModel.discriminator<ITeacher>(Rol.TEACHER, TeacherSchema);
 
-export default UserMongoSchema
-
+export default UserMongoSchema;
