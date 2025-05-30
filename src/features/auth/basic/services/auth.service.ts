@@ -33,7 +33,9 @@ class AuthenticationServices {
 
     const token = jwtHelpers.generateToken<string>({ payload: newUserInDb.uuid }, '2d');
 
-    return CustomApiResponses.success(token);
+    return {
+      access_token: token
+    };
   };
 
   login = async (data: LoginRequestData) => {
@@ -55,7 +57,9 @@ class AuthenticationServices {
 
     const token = jwtHelpers.generateToken<string>({ payload: isExistUserInDb.uuid }, '2d');
 
-    return CustomApiResponses.success(token);
+    return {
+      access_token: token
+    };
   };
 
   logout() {}
