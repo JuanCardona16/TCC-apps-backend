@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 import crypto from 'node:crypto';
 import { CollectionsNamesMongo } from '../../Collections/Collections';
 
@@ -26,7 +26,7 @@ const CarrerMongoSchema = new Schema<ICareer>(
     },
     description: {
       type: String,
-      required: true     
+      required: true,
     },
   },
   {
@@ -64,11 +64,11 @@ export const AcademicPeriodMongoSchema = new Schema<IAcademicPeriod>(
     },
     startDate: {
       type: String,
-      required: true
+      required: true,
     },
     endDate: {
-      type: String, 
-      required: true
+      type: String,
+      required: true,
     },
   },
   {
@@ -85,7 +85,16 @@ export const AcademicPeriodModel = model<IAcademicPeriod>(
 // --------------------------------------------------------------
 
 // Academic Period
-const CurriculumMongoSchema = new Schema(
+export interface ICurriculum {
+  uuid: string;
+  careerId: string;
+  semester: string;
+  subjects?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export const CurriculumMongoSchema = new Schema<ICurriculum>(
   {
     uuid: {
       type: String,
@@ -94,17 +103,36 @@ const CurriculumMongoSchema = new Schema(
       default: () => crypto.randomUUID(),
       index: true,
     },
-    careerId: { type: String, ref: CollectionsNamesMongo.CARRERS, required: true },
-    semester: { type: Number, required: true }, // Ejemplo: 1 para primer semestre
-    subjects: [{ type: String, ref: CollectionsNamesMongo.SUBJECTS }],
+    careerId: { type: String, required: true },
+    semester: { type: String, required: true },
+    subjects: [{ type: String }],
   },
   {
     timestamps: true,
     versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
-export const CurriculumModel = model(CollectionsNamesMongo.CURRICULUMS, CurriculumMongoSchema);
+CurriculumMongoSchema.virtual('career', {
+  ref: CollectionsNamesMongo.CARRERS,
+  localField: 'careerId',
+  foreignField: 'uuid',
+  justOne: true,
+});
+
+CurriculumMongoSchema.virtual('semesterInfo', {
+  ref: CollectionsNamesMongo.ACADEMIC_PERIODS, // nombre del modelo
+  localField: 'semester', // campo en Curriculum
+  foreignField: 'uuid', // campo en AcademicPeriods
+  justOne: true,
+});
+
+export const CurriculumModel = model<ICurriculum>(
+  CollectionsNamesMongo.CURRICULUMS,
+  CurriculumMongoSchema
+);
 
 // --------------------------------------------------------------
 
@@ -132,13 +160,12 @@ const SubjectSchema = new Schema<ISubject>({
   },
   name: { type: String, required: true }, // Ejemplo: "Cálculo I"
   credits: { type: Number, required: true }, // Ejemplo: 4
-  periodId: { type: String, ref: CollectionsNamesMongo.ACADEMIC_PERIODS, required: true },
-  teacherId: { type: String, ref: CollectionsNamesMongo.USERS },
-  prerequisites: [{ type: String, ref: CollectionsNamesMongo.SUBJECTS }],
+  periodId: { type: String, required: true },
+  teacherId: { type: String },
+  prerequisites: [{ type: String }],
   studentsEnrolled: [
     {
       type: String,
-      ref: CollectionsNamesMongo.USERS,
       enrolledAt: { type: Date, default: Date.now },
     },
   ],
@@ -157,8 +184,8 @@ const StudentCareerSchema = new Schema({
     default: () => crypto.randomUUID(),
     index: true,
   },
-  studentId: { type: String, ref: CollectionsNamesMongo.USERS, required: true },
-  careerId: { type: String, ref: CollectionsNamesMongo.CARRERS, required: true },
+  studentId: { type: String, required: true },
+  careerId: { type: String, required: true },
   enrolledAt: { type: Date, default: Date.now },
 });
 
@@ -167,7 +194,17 @@ export const StudentCarrerModel = model(CollectionsNamesMongo.STUDENT_CARRER, St
 // --------------------------------------------------------------
 
 // Schedule
-const ScheduleMongoSchema = new Schema({
+export interface ISchedule {
+  uuid: string;
+  subjectId: string;
+  day: string;
+  time: string;
+  aula?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const ScheduleMongoSchema = new Schema<ISchedule>({
   uuid: {
     type: String,
     required: true,
@@ -181,12 +218,22 @@ const ScheduleMongoSchema = new Schema({
   aula: String, // Ejemplo: "Aula 101"
 });
 
-export const ScheduleModel = model(CollectionsNamesMongo.SCHEDULE, ScheduleMongoSchema);
+export const ScheduleModel = model<ISchedule>(CollectionsNamesMongo.SCHEDULE, ScheduleMongoSchema);
 
 // --------------------------------------------------------------
 
 // Notes
-const NoteMongoSchema = new Schema({
+export interface INote {
+  uuid: string;
+  studentId: string;
+  subjectId: string;
+  grade: number;
+  period: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const NoteMongoSchema = new Schema<INote>({
   uuid: {
     type: String,
     required: true,
@@ -194,10 +241,10 @@ const NoteMongoSchema = new Schema({
     default: () => crypto.randomUUID(),
     index: true,
   },
-  studentId: { type: String, ref: CollectionsNamesMongo.USERS, required: true },
-  subjectId: { type: String, ref: CollectionsNamesMongo.SUBJECTS, required: true },
+  studentId: { type: String, required: true },
+  subjectId: { type: String, required: true },
   grade: { type: Number, required: true }, // Ejemplo: 4.5
   period: { type: String, required: true }, // Ejemplo: "2025-1"
 });
 
-export const MotesModel = model(CollectionsNamesMongo.NOTES, NoteMongoSchema);
+export const NotesModel = model<INote>(CollectionsNamesMongo.NOTES, NoteMongoSchema);
