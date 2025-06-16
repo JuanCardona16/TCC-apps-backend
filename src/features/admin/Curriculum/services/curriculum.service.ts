@@ -16,27 +16,25 @@ export class CurriculumService extends CrudService<ICurriculum> {
   // Crear un currículum
   async create(data: Partial<ICurriculum>): Promise<any> {
     const { careerId, semester, subjects } = data;
-    console.log(data)
+    console.log(data);
 
     // Validaciones
     if (!careerId || !semester) {
-      return CustomError(400, "Faltan campos requeridos: careerId, semester");
+      return CustomError(400, 'Faltan campos requeridos: careerId, semester');
     }
-
-    
 
     // Validar que las materias existen (si se proporcionan)
     if (subjects && subjects.length > 0) {
       const validSubjects = await SubjectModel.find({ uuid: { $in: subjects } });
       if (validSubjects.length !== subjects.length) {
-        return CustomError(400, "Una o más materias no son válidas");
+        return CustomError(400, 'Una o más materias no son válidas');
       }
     }
 
     // Verificar si el currículum ya existe para la carrera y semestre
     const existingCurriculum = await this.model.findOne({ careerId, semester });
     if (existingCurriculum) {
-      return CustomError(400, "El currículum ya existe para esta carrera y semestre");
+      return CustomError(400, 'El currículum ya existe para esta carrera y semestre');
     }
 
     // Crear currículum
@@ -48,29 +46,33 @@ export class CurriculumService extends CrudService<ICurriculum> {
     try {
       const curriculums = await super.findAll();
       if (curriculums.length === 0) {
-        return CustomError(404, "No se encontraron currículums");
+        return CustomError(404, 'No se encontraron currículums');
       }
       return curriculums;
     } catch (error) {
-      return CustomError(500, "Error al obtener currículums");
+      return CustomError(500, 'Error al obtener currículums');
     }
   }
 
   // Buscar un currículum por UUID
   async findByUuid(uuid: string): Promise<any> {
     try {
-      const curriculum = await this.model.findOne({ uuid: uuid }).populate("career", "name -_id").populate("semesterInfo", "name -_id").exec();
+      const curriculum = await this.model
+        .findOne({ uuid: uuid })
+        .populate('career', 'name -_id')
+        .populate('semesterInfo', 'name -_id')
+        .exec();
 
       if (!curriculum) {
-        return CustomError(404, "Currículum no encontrado");
+        return CustomError(404, 'Currículum no encontrado');
       }
 
-      console.log("Curriculum", curriculum)
+      console.log('Curriculum', curriculum);
 
       return curriculum;
     } catch (error) {
-      console.log(error)
-      return CustomError(500, "Error al obtener currículum");
+      console.log(error);
+      return CustomError(500, 'Error al obtener currículum');
     }
   }
 
@@ -82,19 +84,19 @@ export class CurriculumService extends CrudService<ICurriculum> {
       // Validar formato del UUID
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(uuid)) {
-        return CustomError(400, "UUID inválido");
+        return CustomError(400, 'UUID inválido');
       }
 
       // Validar que se proporcione al menos un campo
       if (!careerId && !semester && !subjects) {
-        return CustomError(400, "Debe proporcionar al menos un campo para actualizar");
+        return CustomError(400, 'Debe proporcionar al menos un campo para actualizar');
       }
 
       // Validar carrera si se proporciona
       if (careerId) {
         const career = await CarrerModel.findOne({ uuid: careerId });
         if (!career) {
-          return CustomError(400, "Carrera no encontrada");
+          return CustomError(400, 'Carrera no encontrada');
         }
       }
 
@@ -102,7 +104,7 @@ export class CurriculumService extends CrudService<ICurriculum> {
       if (subjects && subjects.length > 0) {
         const validSubjects = await SubjectModel.find({ uuid: { $in: subjects } });
         if (validSubjects.length !== subjects.length) {
-          return CustomError(400, "Una o más materias no son válidas");
+          return CustomError(400, 'Una o más materias no son válidas');
         }
       }
 
@@ -114,7 +116,7 @@ export class CurriculumService extends CrudService<ICurriculum> {
           uuid: { $ne: uuid },
         });
         if (existingCurriculum) {
-          return CustomError(400, "El currículum ya existe para esta carrera y semestre");
+          return CustomError(400, 'El currículum ya existe para esta carrera y semestre');
         }
       }
 
@@ -122,7 +124,7 @@ export class CurriculumService extends CrudService<ICurriculum> {
         .findOneAndUpdate({ uuid }, { careerId, semester, subjects }, { new: true })
         .exec();
       if (!updatedCurriculum) {
-        return CustomError(404, "Currículum no encontrado");
+        return CustomError(404, 'Currículum no encontrado');
       }
 
       return updatedCurriculum;
@@ -130,7 +132,7 @@ export class CurriculumService extends CrudService<ICurriculum> {
       if (error instanceof CustomError) {
         throw error;
       }
-      return CustomError(500, "Error al actualizar currículum");
+      return CustomError(500, 'Error al actualizar currículum');
     }
   }
 
@@ -140,12 +142,12 @@ export class CurriculumService extends CrudService<ICurriculum> {
       // Validar formato del UUID
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(uuid)) {
-        return CustomError(400, "UUID inválido");
+        return CustomError(400, 'UUID inválido');
       }
 
       const deletedCurriculum = await this.model.findOneAndDelete({ uuid }).exec();
       if (!deletedCurriculum) {
-        return CustomError(404, "Currículum no encontrado");
+        return CustomError(404, 'Currículum no encontrado');
       }
 
       return deletedCurriculum;
@@ -153,9 +155,28 @@ export class CurriculumService extends CrudService<ICurriculum> {
       if (error instanceof CustomError) {
         throw error;
       }
-      return CustomError(500, "Error al eliminar currículum");
+      return CustomError(500, 'Error al eliminar currículum');
     }
   }
+
+  async addSubjectToCurriculum(uuid: string, subjectId: string): Promise<any> {
+    try {
+      
+      const subject = await SubjectModel.findOne({ uuid: subjectId }).exec();
+      
+      if (!subject) {
+        return CustomError(404, 'Materia no encontrada');
+      }
+      
+      const curriculum = await this.model.findOneAndUpdate({ uuid }, { $push: { subjects: subjectId } }).exec();
+
+      return curriculum;
+    } catch (error) {
+      throw CustomError(500, 'Error al agregar materia al currículum');
+    }
+  }
+
+
 }
 
 export default new CurriculumService();

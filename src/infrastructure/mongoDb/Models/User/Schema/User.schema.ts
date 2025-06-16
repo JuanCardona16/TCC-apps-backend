@@ -103,6 +103,9 @@ const StudentSchema = new Schema<IStudent>({
       message: 'Subjects must be unique',
     },
   },
+  careerId: {
+    type: String
+  },
 });
 
 // Profesor

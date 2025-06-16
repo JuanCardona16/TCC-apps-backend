@@ -3,7 +3,7 @@ import {
   ISubject,
   SubjectModel,
 } from '@/infrastructure/mongoDb/Models/Global/schemas.global';
-import { Rol, StudentModel, TeacherModel } from '@/infrastructure/mongoDb/Models/User';
+import { Rol, TeacherModel } from '@/infrastructure/mongoDb/Models/User';
 import { CustomError } from '@/lib';
 import { CrudService } from '@/lib/genericCrud.service';
 
@@ -13,225 +13,159 @@ class SubjectService extends CrudService<ISubject> {
   }
 
   // Crear una materia
-  async create(data: Partial<ISubject>): Promise<any> {
-    const { name, credits, periodId, teacherId, prerequisites } = data;
+  async create(data: Partial<ISubject>): Promise<ISubject> {
+    const {
+      name,
+      credits,
+      periodId,
+      teacherId,
+      prerequisites,
+      studentsEnrolled,
+      activities,
+      schedule,
+      syllabus,
+      totalStudents,
+    } = data;
 
     // Validaciones
     if (!name || !credits || !periodId) {
-      return CustomError(400, 'Faltan campos requeridos: name, credits, periodId');
+      throw CustomError(400, 'Required fields missing: name, credits, periodId');
     }
 
     if (credits <= 0) {
-      return CustomError(400, 'Los créditos deben ser mayores a 0');
+      throw CustomError(400, 'Credits must be greater than 0');
     }
 
     // Validar que el período existe
-    const period = await AcademicPeriodModel.findOne({ uuid: periodId });
+    const period = await AcademicPeriodModel.findOne({ name: periodId });
     if (!period) {
-      return CustomError(400, 'Período académico no encontrado');
+      throw CustomError(400, 'Período académico no encontrado');
     }
 
     // Validar que el profesor existe y tiene rol professor (si se proporciona)
     if (teacherId) {
       const professor = await TeacherModel.findOne({ uuid: teacherId });
       if (!professor || professor.rol !== Rol.TEACHER) {
-        return CustomError(400, 'Profesor no encontrado o no válido');
+        throw CustomError(400, 'Profesor no encontrado o no válido');
       }
     }
 
     // Validar que los prerrequisitos existen (si se proporcionan)
-    if (prerequisites && prerequisites.length > 0) {
-      const validPrerequisites = await SubjectModel.find({ uuid: { $in: prerequisites } });
+    if (prerequisites?.length) {
+      const validPrerequisites = await SubjectModel.find({
+        uuid: { $in: prerequisites },
+      });
       if (validPrerequisites.length !== prerequisites.length) {
-        return CustomError(400, 'Uno o más prerrequisitos no son válidos');
+        throw CustomError(400, 'Uno o más prerrequisitos no son válidos');
       }
     }
 
     // Verificar si la materia ya existe en el período
     const existingSubject = await this.model.findOne({ name, periodId });
     if (existingSubject) {
-      return CustomError(400, 'La materia ya existe en este período');
+      throw CustomError(400, 'La materia ya existe en este período');
     }
 
-    // Crear materia
-    return super.create({ name, credits, periodId, teacherId, prerequisites });
+    return super.create({
+      name,
+      credits,
+      periodId,
+      teacherId,
+      prerequisites,
+      studentsEnrolled: studentsEnrolled || [],
+      activities,
+      schedule,
+      syllabus,
+      totalStudents,
+    });
   }
 
   // Buscar todas las materias
-  async findAll(): Promise<any> {
+  async findAll(): Promise<ISubject[]> {
     try {
       const subjects = await super.findAll();
-      if (subjects.length === 0) {
-        return CustomError(404, 'No se encontraron materias');
-      }
       return subjects;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      return CustomError(500, 'Error al obtener materias');
+      throw CustomError(500, 'Error fetching subjects');
     }
   }
 
   // Buscar una materia por UUID
-  async findByUuid(uuid: string): Promise<any> {
+  async findByUuid(uuid: string): Promise<ISubject> {
     try {
-      // Validar formato del UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(uuid)) {
-        return CustomError(400, 'UUID inválido');
-      }
-
       const subject = await this.model.findOne({ uuid }).exec();
       if (!subject) {
-        return CustomError(404, 'Materia no encontrada');
+        throw CustomError(404, 'Subject not found');
       }
       return subject;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      return CustomError(500, 'Error al obtener materia');
+      throw CustomError(500, 'Error fetching subject');
     }
   }
 
   // Actualizar una materia
-  async update(uuid: string, data: Partial<ISubject>): Promise<any> {
+  async update(uuid: string, data: Partial<ISubject>): Promise<ISubject> {
     try {
-      const { name, credits, periodId, teacherId, prerequisites } = data;
-
-      // Validar formato del UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(uuid)) {
-        return CustomError(400, 'UUID inválido');
-      }
-
-      // Validar que se proporcione al menos un campo
-      if (!name && !credits && !periodId && !teacherId && !prerequisites) {
-        return CustomError(400, 'Debe proporcionar al menos un campo para actualizar');
-      }
-
-      // Validar créditos si se proporcionan
-      if (credits && credits <= 0) {
-        return CustomError(400, 'Los créditos deben ser mayores a 0');
-      }
-
-      // Validar período si se proporciona
-      if (periodId) {
-        const period = await AcademicPeriodModel.findOne({ uuid: periodId });
-        if (!period) {
-          return CustomError(400, 'Período académico no encontrado');
-        }
-      }
-
-      // Validar profesor si se proporciona
-      if (teacherId) {
-        const professor = await TeacherModel.findOne({ uuid: teacherId });
-        if (!professor || professor.rol !== Rol.TEACHER) {
-          return CustomError(400, 'Profesor no encontrado o no válido');
-        }
-      }
-
-      // Validar prerrequisitos si se proporcionan
-      if (prerequisites && prerequisites.length > 0) {
-        const validPrerequisites = await SubjectModel.find({ uuid: { $in: prerequisites } });
-        if (validPrerequisites.length !== prerequisites.length) {
-          return CustomError(400, 'Uno o más prerrequisitos no son válidos');
-        }
-      }
-
-      // Verificar si el nombre ya existe en el período (excepto para la materia actual)
-      if (name && periodId) {
-        const existingSubject = await this.model.findOne({ name, periodId, uuid: { $ne: uuid } });
-        if (existingSubject) {
-          return CustomError(400, 'La materia ya existe en este período');
-        }
-      }
-
       const updatedSubject = await this.model
-        .findOneAndUpdate(
-          { uuid },
-          { name, credits, periodId, teacherId, prerequisites },
-          { new: true }
-        )
+        .findOneAndUpdate({ uuid }, { ...data }, { new: true })
         .exec();
+
       if (!updatedSubject) {
-        return CustomError(404, 'Materia no encontrada');
+        throw CustomError(404, 'Subject not found');
       }
 
       return updatedSubject;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      return CustomError(500, 'Error al actualizar materia');
+      throw CustomError(500, 'Error updating subject');
     }
   }
 
   // Eliminar una materia
-  async delete(uuid: string): Promise<any> {
+  async delete(uuid: string): Promise<ISubject> {
     try {
-      // Validar formato del UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(uuid)) {
-        return CustomError(400, 'UUID inválido');
-      }
-
       const deletedSubject = await this.model.findOneAndDelete({ uuid }).exec();
       if (!deletedSubject) {
-        return CustomError(404, 'Materia no encontrada');
+        throw CustomError(404, 'Subject not found');
       }
-
       return deletedSubject;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      return CustomError(500, 'Error al eliminar materia');
+      throw CustomError(500, 'Error deleting subject');
     }
   }
 
   // Método adicional para matricular un estudiante
-  async enrollStudent(subjectUuid: string, studentUuid: string): Promise<any> {
+  async enrollStudent(subjectUuid: string, studentUuid: string): Promise<ISubject> {
     try {
-      // Validar UUIDs
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(subjectUuid) || !uuidRegex.test(studentUuid)) {
-        return CustomError(400, 'UUID inválido');
-      }
-
-      // Validar que la materia existe
+      // First find the subject to check if it exists
       const subject = await this.model.findOne({ uuid: subjectUuid });
       if (!subject) {
-        return CustomError(404, 'Materia no encontrada');
+        throw CustomError(404, 'Subject not found');
       }
 
-      // Validar que el estudiante existe y tiene rol student
-      const student = await StudentModel.findOne({ uuid: studentUuid });
-      if (!student || student.rol !== Rol.STUDENT) {
-        return CustomError(400, 'Estudiante no encontrado o no válido');
-      }
-
-      // Verificar si el estudiante ya está matriculado
-      if (subject.studentsEnrolled?.some((s) => s.userId === studentUuid)) {
-        return CustomError(400, 'El estudiante ya está matriculado en esta materia');
-      }
-
-      // Matricular estudiante
+      // Update subject with new student and increment totalStudents
       const updatedSubject = await this.model
         .findOneAndUpdate(
           { uuid: subjectUuid },
-          { $push: { studentsEnrolled: { userId: studentUuid, enrolledAt: new Date() } } },
+          {
+            $push: {
+              studentsEnrolled: {
+                userId: studentUuid,
+                enrolledAt: new Date(),
+              },
+            },
+            $inc: { totalStudents: 1 }, // Increment totalStudents by 1
+          },
           { new: true }
         )
         .exec();
 
+      if (!updatedSubject) {
+        throw CustomError(404, 'Subject not found');
+      }
+
       return updatedSubject;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      return CustomError(500, 'Error al matricular estudiante');
+      throw CustomError(500, 'Error enrolling student');
     }
   }
 }

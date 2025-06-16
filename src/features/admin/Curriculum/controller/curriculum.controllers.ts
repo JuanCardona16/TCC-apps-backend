@@ -3,11 +3,11 @@ import { Request, Response } from 'express';
 import curriculumService from '../services/curriculum.service';
 
 export const createCurriculum = async (req: Request, res: Response) => {
-  console.log("controller", req.body)
+  console.log('controller', req.body);
   try {
     const newCurriculum = await curriculumService.create(req.body);
 
-    console.log("response services", newCurriculum)
+    console.log('response services', newCurriculum);
 
     res.status(201).json({
       success: true,
@@ -21,7 +21,7 @@ export const createCurriculum = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al crear currículum" });
+    res.status(500).json({ error: 'Error al crear currículum' });
   }
 };
 
@@ -40,7 +40,7 @@ export const getCurriculums = async (_req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener currículums" });
+    res.status(500).json({ error: 'Error al obtener currículums' });
   }
 };
 
@@ -49,7 +49,7 @@ export const getCurriculumByUuid = async (req: Request, res: Response) => {
     const { uuid } = req.params;
     const curriculum = await curriculumService.findByUuid(uuid);
 
-    console.log("controller response", curriculum)
+    console.log('controller response', curriculum);
 
     res.status(200).json({
       success: true,
@@ -60,7 +60,7 @@ export const getCurriculumByUuid = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener currículum" });
+    res.status(500).json({ error: 'Error al obtener currículum' });
   }
 };
 
@@ -81,7 +81,7 @@ export const updateCurriculum = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar currículum" });
+    res.status(500).json({ error: 'Error al actualizar currículum' });
   }
 };
 
@@ -92,7 +92,7 @@ export const deleteCurriculum = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      message: "Currículum eliminado",
+      message: 'Currículum eliminado',
       curriculum: {
         uuid: deletedCurriculum.uuid,
         careerId: deletedCurriculum.careerId,
@@ -103,6 +103,28 @@ export const deleteCurriculum = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al eliminar currículum" });
+    res.status(500).json({ error: 'Error al eliminar currículum' });
   }
 };
+
+export const addSubjectToCurriculum = async (req: Request, res: Response) => {
+  try {
+    const { curriculumId, subjectId } = req.params;
+    const curriculum = await curriculumService.addSubjectToCurriculum(curriculumId, subjectId);
+    res.status(200).json({
+      success: true,
+      message: 'Materia agregada al currículum',
+      curriculum: {
+        uuid: curriculum.uuid,
+        careerId: curriculum.careerId,
+        semester: curriculum.semester,
+        subjects: curriculum.subjects,
+        createdAt: curriculum.createdAt,
+        updatedAt: curriculum.updatedAt,
+      },
+    });
+  } catch (error) {   
+    res.status(500).json({ error: 'Error al agregar materia al currículum' });
+  }
+}
+

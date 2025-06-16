@@ -10,12 +10,14 @@ export interface IUser {
   associatedSubjects?: string[];
   registeredSubjects?: string[];
   historyOfNotifications?: string;
+  careerId?: string;
 }
 
 // Estudiante
 export interface IStudent extends IUser {
   studentCode: string;
   registeredSubjects: string[];
+  careerId?: string;
 }
 
 export interface ITeacher extends IUser {

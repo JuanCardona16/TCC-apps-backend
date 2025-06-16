@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
-import careerService from "../services/career.service";
+import { Request, Response } from 'express';
+import careerService from '../services/career.service';
 
 export const createCareer = async (req: Request, res: Response) => {
   try {
     const newCareer = await careerService.create(req.body);
+    console.log(newCareer)
     res.status(201).json({
       success: true,
       career: {
@@ -15,7 +16,8 @@ export const createCareer = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al crear carrera" });
+    console.log("error carrer: ", error)
+    res.status(500).json({ error: 'Error al crear carrera' });
   }
 };
 
@@ -33,7 +35,7 @@ export const getCareers = async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener carreras" });
+    res.status(500).json({ error: 'Error al obtener carreras' });
   }
 };
 
@@ -53,7 +55,7 @@ export const getCareerByUuid = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener carrera" });
+    res.status(500).json({ error: 'Error al obtener carrera' });
   }
 };
 
@@ -61,19 +63,15 @@ export const updateCareer = async (req: Request, res: Response) => {
   try {
     const { uuid } = req.params;
     const updatedCareer = await careerService.update(uuid, req.body);
+    console.log("updatedCareer:", updatedCareer)
 
     res.status(200).json({
       success: true,
-      career: {
-        uuid: updatedCareer.uuid,
-        name: updatedCareer.name,
-        description: updatedCareer.description,
-        createdAt: updatedCareer.createdAt,
-        updatedAt: updatedCareer.updatedAt,
-      },
+      career: updatedCareer,
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar carrera" });
+    console.log("Error put:", error)
+    res.status(500).json({ error: 'Error al actualizar carrera' });
   }
 };
 
@@ -84,7 +82,7 @@ export const deleteCareer = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      message: "Carrera eliminada",
+      message: 'Carrera eliminada',
       career: {
         uuid: deletedCareer.uuid,
         name: deletedCareer.name,
@@ -94,6 +92,6 @@ export const deleteCareer = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error al eliminar carrera" });
+    res.status(500).json({ error: 'Error al eliminar carrera' });
   }
 };
