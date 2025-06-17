@@ -168,14 +168,14 @@ export class CurriculumService extends CrudService<ICurriculum> {
         return CustomError(404, 'Materia no encontrada');
       }
       
-      const curriculum = await this.model.findOneAndUpdate({ uuid }, { $push: { subjects: subjectId } }).exec();
+      const curriculum = await this.model.findOneAndUpdate({ uuid }, { $push: { subjects: subject.uuid } }).exec();
+      console.log('Curriculum service response: ', curriculum)
 
       return curriculum;
     } catch (error) {
       throw CustomError(500, 'Error al agregar materia al currículum');
     }
   }
-
 
 }
 

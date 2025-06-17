@@ -15,6 +15,6 @@ CurriculumPaths.get('/curriculums', getCurriculums);
 CurriculumPaths.get('/curriculums/:uuid', getCurriculumByUuid);
 CurriculumPaths.put('/curriculums/:uuid', updateCurriculum);
 CurriculumPaths.delete('/curriculums/:uuid', deleteCurriculum);
-CurriculumPaths.post('/curriculums/:uuid/subjects/:subjectId', addSubjectToCurriculum);
+CurriculumPaths.post('/curriculums/:curriculumId/subjects/:subjectId', addSubjectToCurriculum);
 
 export default CurriculumPaths;

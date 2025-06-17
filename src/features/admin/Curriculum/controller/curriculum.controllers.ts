@@ -110,7 +110,11 @@ export const deleteCurriculum = async (req: Request, res: Response) => {
 export const addSubjectToCurriculum = async (req: Request, res: Response) => {
   try {
     const { curriculumId, subjectId } = req.params;
+    console.log('Params', curriculumId, subjectId);
+
+
     const curriculum = await curriculumService.addSubjectToCurriculum(curriculumId, subjectId);
+    console.log('Curriculum controller response', curriculum);
     res.status(200).json({
       success: true,
       message: 'Materia agregada al currículum',
@@ -123,8 +127,8 @@ export const addSubjectToCurriculum = async (req: Request, res: Response) => {
         updatedAt: curriculum.updatedAt,
       },
     });
-  } catch (error) {   
+  } catch (error) {
+    console.log("error", error)
     res.status(500).json({ error: 'Error al agregar materia al currículum' });
   }
-}
-
+};
